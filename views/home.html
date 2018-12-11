@@ -1,0 +1,42 @@
+<!-- views/profile.ejs -->
+<!doctype html>
+<html>
+<head>
+    <title>Node Authentication</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/home.css">
+</head>
+<body>
+<div class="container">
+
+    <div class="page-header text-center">
+        <h1><span class="fa fa-anchor"></span>2升4目标用户查询</h1>
+        <a href="/logout" class="btn btn-default btn-sm">退出</a>
+    </div>
+
+    <div class="row">
+        <!-- LOCAL INFORMATION -->
+        <div class="col-sm-12">
+            <div class="well well-lg">
+                <div>
+                    <span class="fa fa-user"> 用户号码</span>
+                    <input type="text" class="input-sm" id="inputNum">
+                    <button id="queryBtn" class="btn btn-sm btn-primary">点击查询</button>
+                </div>
+                <hr>
+                <div>
+                    <span class="fa fa-laptop"> 查询结果</span>
+                    <span class="label" id="spanQueryResult"></span>
+                </div>
+                <p>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="/static/js/main.js"></script>
+</body>
+</html>

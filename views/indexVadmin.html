@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="transparent">
+    <meta name="format-detection" content="telephone=no">
+    <title>宽带助手Admin</title>
+    <link rel="apple-touch-icon-precomposed" sizes="1024x1024" href="static/images/logo.png">
+    <link rel="icon" type="image/png" sizes="1024x1024"  href="static/images/logo.png">
+    <link rel="apple-touch-startup-image" sizes="1024x1024" href="static/images/logo.png">
+    <link rel="apple-touch-startup-image" sizes="369x372" href="static/images/logo.png" media="screen and (min-device-width: 80px) and (-webkit-min-device-pixel-ratio: 2)">
+    <link rel="stylesheet" href="static/css/bootstrap.css">
+    <link rel="stylesheet" href="static/css/mainVadmin.css">
+</head>
+<body>
+<div class="container-fluid" id="app">
+    <div class="row">
+        <div class="col-xs-12" id="app-nav">
+            <nav class="navbar navbar-inverse navbar-fixed-top">
+                <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                            <span class="sr-only"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+
+                        <a class="navbar-brand" href="" id="logo_word"><img src="static/images/logo_homepage.png" alt="Unicom" class="img-rounded">宿州联通宽带助手<small>Admin</small></a>
+                    </div>
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <ul class='nav navbar-nav'>
+                            <li class='active'><a href='' id="bandRouteClick">宽带查询<span class='sr-only'></span></a></li>
+                            <li class='active'><a href='' id="iptvRouteClick">IPTV解绑<span class='sr-only'></span></a></li>
+                            <li class='active'><a href='/olt_alarm'>OLT故障记录查询<span class='sr-only'></span></a></li>
+                            <li class='active'><a href='/logout'>退出<span class='sr-only'></span></a></li>
+                        </ul>
+                    </div><!-- /.navbar-collapse -->
+                </div><!-- /.container-fluid -->
+            </nav>
+        </div>
+        <!--body展现内容-->
+        <div id="app-content">
+            <!--页面路由 宽带模块和iptv模块-->
+
+            <!--宽带模块 表单+展现-->
+            <div id = 'band'>
+                <!--宽带模块  表单-->
+                <div class="col-xs-12">
+                    <p class="text-muted v_info">在线情况+认证记录+客户资料+中兴华为OLT用户信息</p>
+                    <form action="/" method="post" class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-xs-3">宽带帐号</label>
+                            <div class="col-xs-6">
+                                <input class="form-control" id ='input_usernum' type="text" name="userNum" placeholder="模板:055701234567"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-xs-3" for="timePicker_start">开始时间</label>
+                            <div class="col-xs-6">
+                                <input class="form-control" type="date" name="timePicker_start" id="timePicker_start" value="">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-xs-3" for="timePicker_end">结束时间</label>
+                            <div class="col-xs-6">
+                                <input class="form-control" type="date" name="timePicker_end" id="timePicker_end" value="">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-8 col-md-offset-2 col-xs-12">
+                                <button class="btn-primary form-control queryBtn" id="queryAuthBtn"><b>查询用户认证信息</b></button>
+                                <button style="display: none" class="btn-success form-control queryBtn" id="queryOltBtn"><b>查询用户OLT信息</b></button>
+                                <button class="btn-success form-control queryBtn" id="queryQzBtn"><b>查询用户OLT及所在PON口群障信息</b></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!--宽带模块  展现-->
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div>
+                            <p id="show_area_tip" class="tips">
+                                <span class="label label-info">时间默认当天，可以自行选择</span>
+                                <span style="opacity:0.2;display: block"> 开发&维护 By 李冠华.2018</span>
+                        </div>
+
+                        <div v-if = "show_auth_orNot" id = 'show_auth_list'>
+                            <div class="panel panel-info">
+                                <div class="panel-heading"><strong>用户在线情况</strong></div>
+                                <div class="panel-body">
+                                    <ul v-if = "results.userInfo.toString()" class="list-group">
+                                        <li class="list-group-item list-group-item-warning">
+                                            <span>宽带帐号: </span>
+                                            <span v-text = "results.userInfo[0]"></span>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <span>登录时间: </span>
+                                            <span v-text = "results.userInfo[1]"></span>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <span>在线时长: </span>
+                                            <span v-text = "results.userInfo[2]"></span>
+                                        </li>
+                                    </ul>
+                                    <ul v-else class="list-group">
+                                        <li class="list-group-item list-group-item-danger">此用户不在线.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="panel panel-info">
+                                <div class="panel-heading"><strong>用户资料情况</strong></div>
+                                <div class="panel-body">
+                                    <ul v-if="results.userBandType.toString()" class="list-group">
+                                        <li class="list-group-item">
+                                            <span>用户带宽: </span>
+                                            <span v-text = "results.userBandType[0]"></span>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <span>用户账户状态: </span>
+                                            <span id="userCountSta" v-text = "results.userBandType[1]"></span>
+                                        </li>
+                                    </ul>
+                                    <ul v-else class="list-group">
+                                        <li class="list-group-item">无用户账户信息。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="panel panel-info">
+                                <div class="panel-heading"><strong>用户认证记录</strong></div>
+                                <div class="panel-body">
+                                    <table v-if ="results.userAuthHis.toString()" class="table">
+                                        <thead>
+                                        <tr>
+                                            <th>接收时间</th>
+                                            <th>包类型</th>
+                                            <th>响应码</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for = "p in results.userAuthHis">
+                                            <td v-text = "p[0]"></td>
+                                            <td v-text = "p[1]"></td>
+                                            <td v-text = "p[2]"></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    <table v-else><tr><td>无认证记录.</td></tr></table>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="show_olt_list">
+                            <div class="divInterCenter" id="qunzhangArea"></div>
+                            <!--olt显示区域    -->
+                            <p v-if = "show_olt_tip" class="tips">正在查询OLT信息,请等待:<img src='static/images/time.gif' /></p>
+                            <div v-if="show_olt_orNot" ><!--是否显示olt区域-->
+                                <div v-if="woyunwei" class="alert alert-danger"><p>集团沃运维app无此用户信息</p></div>
+                                <div v-else>
+                                    <div v-if="zteOrHwOlt" class="alert alert-danger"><p>只支持FTTH区域用户OLT查询</p></div>
+                                    <div v-else-if="sysBusy" class="alert alert-danger"><p>系统繁忙请勿频繁点击，中兴OLT5s后 或 华为OLT10秒后 如未显示请重新点击查询按钮。</p></div>
+                                    <!--没有上述异常，再显示真正的OLT数据-->
+                                    <div v-else>
+                                        <!--中兴设备显示区域-->
+                                        <div v-if ="results.manufacturer === 'zte'">
+                                            <div class="panel panel-primary">
+                                                <div class="panel-heading">
+                                                    <strong><img src="static/images/zte.png" alt="">中兴OLT用户信息: </strong>
+                                                    <span v-text = 'results.data' class="label label-danger"></span>
+                                                </div>
+                                                <div class="panel-body">
+
+                                                    <p><strong>查询OLT侧光猫光功率:</strong></p>
+                                                    <pre><span class="label label-primary">光猫收光高于-27才正常</span>
+<p id ="catPower" v-text = "results.result1"></p>
+                                    </pre>
+
+                                                    <p><strong>查询OLT侧光猫数据是否有遗漏:</strong>
+                                                        <pre id="catDataCheck"><span id="singleCatZte"></span><span>+</span><span id="doubleCatZte"></span><span>+</span><span id="iptvZte"></span><span> </span><span id="autoComZte"></span><p v-text = "results.result2"></p><p v-text = "results.result3"></p></pre>
+                                                    <p><strong>查询光猫状态及最近10次掉线记录:</strong></p>
+                                                    <pre><p id="cat10cause" v-text = "results.result4"></pre>
+
+                                                    <p><strong>查询OLT侧光猫注册不成功原因:</strong></p>
+                                                    <pre><span class="label label-primary ">查询OLT侧光猫数据所在端口:</span>
+端口:<span v-text = "results.gpon"></span>  Loid码:<span v-text = "results.loid"></span>
+<span class="label label-default">查询OLT下未成功注册光猫信息:</span>
+<span v-text = "results.result0"></span>
+</pre>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!--华为设备显示区域-->
+                                        <div v-else>
+                                            <div class="panel panel-primary">
+                                                <div class="panel-heading"><strong><img src="static/images/huawei.png" alt="">华为OLT用户信息:</strong>
+                                                    <span v-text = 'results.data' class="label label-danger"></span>
+                                                </div>
+                                                <div class="panel-body">
+                                                    <p><strong>查询光猫是否在线以及最后一次掉线原因:</strong></p>
+                                                    <pre>
+<p id ="catCause" v-text = "results.res1"></p>
+                                    </pre>
+
+                                                    <p><strong>查询OLT侧光猫数据是否有遗漏:</strong>
+                                                        <pre id="catDataCheckHw"><span id="singleCatHw"></span><span>+</span><span id="doubleCatHw"></span><span>+</span><span id="iptvHw"></span><span> </span><span id="autoComHw"></span><p v-text = "results.res2"></p></pre>
+                                                    <p><strong>查询光猫光功率:</strong></p>
+                                                    <pre><span class="label label-primary">光猫收光高于-27才正常</span><p id="catPowerHw" v-text = "results.res3"></pre>
+                                                    <p><strong>查询OLT侧光猫注册不成功原因:</strong></p>
+                                                    <pre><span class="label label-primary ">光猫应在的正确端口如下:</span>
+端口:<span v-text = "results.gpon"></span>  Loid码:<span v-text = "results.loid"></span>
+<span class="label label-default">未成功注册的光猫信息如下:</span>
+<span v-text = "results.res4" id="huaweiAuthCat"></span>
+</pre>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--//IPTV模块-->
+            <div id = 'iptv'>
+                <div class="row">
+                    <div class="col-xs-1"></div>
+                    <div class="col-xs-10">
+                        <!--<p class="text-muted v_info">正在开发，敬请期待！</p>-->
+                        <p class="text-muted v_info">查询IPTV帐号+MAC地址</p>
+                        <p style="color: red;font-weight: bolder;font-size: 2em">机顶盒不能使用请先进行启用操作看是否恢复正常，不行的话再进行解绑操作。 </p>
+                        <form action="/" method="post" class="form-horizontal">
+                            <div class="form-group col-xs-12">
+                                <div class="col-xs-12">
+                                    <label for="codeText">图片验证码:
+                                        <img id="codeImg" src="/iptvCode" alt="等待验证码">
+                                        (<b style="color:red;">下面每个功能都是独立的，每个使用前都需要使用新的验证码</b>)</label>
+                                    <input class="form-control" id ='codeText' type="text" name="userNum" placeholder="输入上面4位数字验证码"/>
+
+                                    <label class=""><span class="badge">1</span>宽带帐号:<b style="color: red;">根据宽带账号查询IPTV帐号</b></label>
+                                    <div class="">
+                                        <input class="form-control" id ='num' type="text" name="num" placeholder="模板:055701234567"/>
+                                    </div>
+                                    <div class="">
+                                        <button class="btn-primary form-control" id="queryIptvBtn" ><b>点击查询</b></button>
+                                    </div>
+
+                                    <label class="" for="mac"><span class="badge">2</span>机顶盒解绑:Mac地址必须为大写字母，英文冒号隔开
+                                    </label>
+                                    <b style='color:red;'>请在解绑后务必断网并恢复出厂设置</b>
+                                    <div class="">
+                                        <input class="form-control" id ='mac' type="text" placeholder="模板 CL:IM:BU:PM:YB:OY 字母大写 "/>
+                                    </div>
+                                    <div class="">
+                                        <button class="btn-primary form-control" id="unbindBtn"><b>点击解绑</b></button>
+                                    </div>
+
+                                    <label class="" for="mac"><span class="badge">3</span>机顶盒启用:
+                                    </label>
+                                    <b style='color:red;'>根据MAC地址启用机顶盒</b>
+                                    <div class="">
+                                        <input class="form-control" id ='mac_iptv' type="text" placeholder="模板 CL:IM:BU:PM:YB:OY 字母大写 "/>
+                                    </div>
+                                    <div class="">
+                                        <button class="btn-primary form-control" id="activeBtn"><b>点击启用</b></button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-xs-12" id="show_iptv_loading"></div>
+                    <div class="col-xs-12" id="iptvShowArea" v-if="show_iptv_orNot">
+                        <div v-if="numCheck">
+                            <div class="col-xs-1"></div>
+                            <div class="col-xs-9" >
+                                <p class="bg-danger">请输入正确的宽带号码或者MAC地址!</p>
+                            </div>
+                            <div class="col-xs-3"></div>
+                        </div>
+                        <div v-else>
+                            <div class="col-xs-12">
+                                <div class="panel panel-primary" v-if="type">
+                                    <div class="panel-heading">结果如下:</div>
+                                    <div v-if='results.state'><span v-text = 'results.state'></span></div>
+                                    <div v-else>
+                                        <div class="panel-body" >
+                                            <span>服务状态: </span>
+                                            <span v-text="results.active"></span>
+                                            <hr>
+                                            <span>IPTV帐号: </span>
+                                            <span v-text="results.iptvNum"></span>
+                                            <hr>
+                                            <span>IPTV MAC地址:</span>
+                                            <span v-text="results.iptvMac"></span>
+                                        </div>
+                                        <div class="panel-footer">
+                                            <span>如果IPTV 帐号或者Mac为空，说明后台查询不到此宽带对应的IPTV帐号或Mac地址信息。</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="panel panel-primary">
+                                    <div class="panel-heading">结果如下:</div>
+                                    <hr>
+                                    <div class="panel-body">
+                                        <span style="word-wrap: break-word;white-space:normal;width:80%" class="label label-success" v-if="show_result === 'good' " v-text="results.state"></span>
+                                        <span style="word-wrap: break-word;white-space:normal;width: 80%;" class="label label-danger"  v-else v-text="results.state"></span>
+                                    </div>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+
+<script src="static/js/jquery.min.js"></script>
+<script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="static/js/vue.js"></script>
+<script src="static/js/mainVadmin.js"></script>
+</body>
+</html>

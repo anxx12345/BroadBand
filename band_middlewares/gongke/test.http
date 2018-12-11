@@ -1,0 +1,13 @@
+###
+POST http://10.245.0.223:10010/cas/login; HTTP/1.1
+content-type: application/application/x-www-form-urlencoded
+
+{
+"lt":"LT-9658576-V1eKzS7m3E5psdbyJRyxbJKpDfCpIb"
+"execution":"e1s1"
+"_eventId":"submit"
+"username":""
+"password":""
+"vcode":"请输入验证码"
+"usernameTemp":""
+}
