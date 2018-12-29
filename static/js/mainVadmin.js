@@ -486,7 +486,7 @@ $(function () {
                     if(result.qz_state.indexOf('上行链路') !== -1 && result.manufacturer === 'zte'){
                         $qunzhangArea.html(`<span class="label label-danger">${result.qz_state}</span>
                         <br>
-                        <a class = 'btn btn-small btn-warning' id = 'errHandOverBtn'>一键倒换</a>
+                        <a class = 'btn btn-small btn-warning' id = 'errHandOverBtn'>一键倒换(目前支持中兴OLT，华为OLT请勿点击)</a>
                         `)
                     }else{
                         $qunzhangArea.html(`<span class="label label-danger">${result.qz_state}</span>`)
