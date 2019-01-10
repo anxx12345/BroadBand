@@ -1,7 +1,7 @@
 const router = require('koa-router')();
-let router_main = require('../Middlewares/routes/iptv_route');
-let router_iptv= require('./routes/auth&olt_route');
-let router_olt_alarm = require('./routes/olt_route');
+let router_main = require('./routes/iptv_route');
+let router_iptv= require('./routes/auth&olt_data_route');
+let router_olt_alarm = require('./routes/olt_alarms_route');
 const logIt = require('./running_log');
 const keys = require('../keys');
 module.exports = ()=>{
@@ -24,7 +24,7 @@ module.exports = ()=>{
             let homepage = '';
             user = ctx.session.user;
             if(ctx.session.user === keys.auth.guest.username){
-                homepage = 'indexV4.5';
+                homepage = 'indexVuser';
             }
             if(ctx.session.user === keys.auth.admin.username){
                 homepage = 'indexVadmin';

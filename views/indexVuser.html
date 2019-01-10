@@ -30,7 +30,7 @@
                             <span class="icon-bar"></span>
                         </button>
 
-                        <a class="navbar-brand" href="" id="logo_word"><img src="static/images/logo_homepage.png" alt="Unicom" class="img-rounded">宿州联通宽带助手<small>V4.5</small></a>
+                        <a class="navbar-brand" href="" id="logo_word"><img src="static/images/logo_homepage.png" alt="Unicom" class="img-rounded">宿州联通宽带助手<small>V5.0</small></a>
                     </div>
                     <!-- Collect the nav links, forms, and other content for toggling -->
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -52,11 +52,18 @@
                 <!--宽带模块  表单-->
                 <div class="col-xs-12">
                     <p class="text-muted v_info">在线情况+认证记录+客户资料+中兴华为OLT用户信息</p>
+                    <p class='bg-danger v_info'>宽带号码和联通手机号码，查询时只能填写一个。</p>
                     <form action="/" method="post" class="form-horizontal">
                         <div class="form-group">
-                            <label class="col-xs-3">宽带帐号</label>
+                            <label class="col-xs-3" for='input_usernum'>宽带帐号</label>
                             <div class="col-xs-6">
                                 <input class="form-control" id ='input_usernum' type="text" name="userNum" placeholder="模板:055701234567"/>
+                            </div>
+                        </div>
+                         <div class="form-group">
+                            <label class="col-xs-3" for='input_cellnum'>手机号码</label>
+                            <div class="col-xs-6">
+                                <input class="form-control" id ='input_cellnum' type="text" name="cellnum" placeholder="11位手机号码"/>
                             </div>
                         </div>
                         <div class="form-group">

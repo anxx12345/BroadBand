@@ -19,10 +19,10 @@ app.use(flash());
 app.use(bodyParser());
 app.use(views('views', { map: {html: 'ejs'}}));//allow .html being unchanged.in this way, ejs can't recognise .ejs file
 
-let staticFiles = require('./Middlewares/static_files');
+let staticFiles = require('./Middlewares/routes/static_files');
 app.use(staticFiles('/static/',__dirname + '/static'));
 
-const router = require('./Middlewares/routes')();
+const router = require('./Middlewares/mainRoutes')();
 
 app.use(router.routes());
 

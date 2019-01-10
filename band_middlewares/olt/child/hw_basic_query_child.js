@@ -116,7 +116,7 @@ function repalceSomething(str){
 
 // telnet({host:'10.10.75.2',loid:'5570049801'});
 //telnet({host:'10.10.28.2',loid:'5570070344'});
-//telnet({host:'10.10.39.2',loid:'5570109149'})
+// telnet({host:'10.10.71.2',loid:'5570128650'})
 let options = {host:process.argv[2],loid:process.argv[3]};
 // module.exports = telnet;
 telnet(options);

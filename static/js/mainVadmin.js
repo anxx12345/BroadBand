@@ -236,17 +236,18 @@ $(function () {
         vm_auth.results = {userInfo:[],userAuthHis:[]};
         e.preventDefault();
         let userNum = $('#input_usernum').val();
+        let cellNum = $('#input_cellnum').val();
         let start_time = $start_time.val();
         let end_time = $end_time.val();
         if(start_time === '' || end_time === '' || start_time > end_time){
             $show_area_tip.text('请输入正确的开始和结束时间');
         }else {
             //认证系统post数据模块，后台相应后进行爬取并返回
-            if(userNum.match(/05570\d{7}/)&&userNum.toString().length === 12){
+            if(userNum.match(/05570\d{7}/)&&userNum.toString().length === 12 || cellNum.match(/1\d{10}/)&&cellNum.toString().length===11){
                 $show_area_tip.html("<p class='tips'>正在查询认证系统信息<img src='static/images/wait.gif' /></p>");
                 //auth post block
                 $.post('/auth',{
-                    userNum:userNum,
+                    userNum:userNum === '' ? cellNum : userNum,
                     startTime:start_time+" 00:00:00",
                     endTime: end_time+" 23:59:59"
                 }, function (result) {
@@ -255,20 +256,26 @@ $(function () {
                         $show_area_tip.text('此宽带帐号无记录。')
                     }else if(JSON.stringify(result) === '{}'){
                         $show_area_tip.text('此宽带帐号无记录。')
-                    } else {
-                        $show_area_tip.text('查询结果如下:');
+                    }else if(result.toString().indexOf('no num') !== -1){
+                        $show_area_tip.text('此手机号无对应的宽带账号信息，请输入用户入网时正确的联系号码.或者直接输入宽带号码查询.')
+                    }else {
+                        if (result.bandNum) {
+                            $show_area_tip.text(`用户宽带号码: ${result.bandNum}`);
+                        }else{
+                            $show_area_tip.text('查询结果如下:');
+                        }
                         vm_auth.show_auth_orNot = true;
                         vm_auth.results = result;
-
                     }
                 });
             }else {
-                $show_area_tip.text('请输入正确的宽带帐号！')
+                $show_area_tip.text('请输入正确的宽带帐号或者手机号码！')
             }
         }
     });
     //OLT查询模块内部 表格提交
     $(document).on('click','#queryOltBtn', function (e) {
+        $show_area_tip.html("<p class='tips'>正在计算<img src='static/images/wait.gif' /></p>");
         $queryOltBtn = $('#queryOltBtn');
         $queryOltBtn.attr('abled',true).html('<b style="color: #ff0000">OLT查询十秒锁定</b>');
         setTimeout(function () {
@@ -278,43 +285,48 @@ $(function () {
         vm_olt.sysBusy = false;//是否显示olt后台忙vue if模块判断参数
         e.preventDefault();
         let userNum = $('#input_usernum').val();
+        let cellNum = $('#input_cellnum').val();
         let start_time = $start_time.val();
         let end_time = $end_time.val();
         if(start_time === '' || end_time === '' || start_time > end_time){
             $show_area_tip.text('请输入正确的开始和结束时间');
         }else {
             //认证系统post数据模块，后台相应后进行爬取并返回
-            if(userNum.match(/05570\d{7}/)&&userNum.toString().length === 12){
+            if(userNum.match(/05570\d{7}/)&&userNum.toString().length === 12 || cellNum.match(/1\d{10}/)&&cellNum.toString().length===11){
                 //华为或中兴olt post数据模块，判断沃运维app数据，olt爬取数据
                 vm_olt.woyunwei = false;
                 vm_olt.zteolt = false;
                 vm_olt.show_olt_tip = true;
                 $.post('/olt_v3',{
-                    userNum:userNum
+                    userNum:userNum ? userNum : cellNum
                 }, function (result) {
                     console.log(result);
+                    $show_area_tip.html("查询结果如下:");
                     //console.log(result);//post返回结果
                     vm_olt.show_olt_tip = false; //动画提示隐藏
-                    vm_olt.show_olt_orNot = true;//显示olt区域
                     vm_olt.woyunwei = false; //清空上次OLT查询页面提示
                     vm_olt.zteOrHwOlt = false;//清空上次OLT查询页面提示
                     vm_olt.sysBusy = false;//清空上次OLT查询页面提示
 
-
-                    if(result.toString().indexOf('woyunwei') !== -1){//判断wo运维app是否没有信息
+                    if (result.toString().indexOf('woyunwei') !== -1) {//判断wo运维app是否没有信息
+                        vm_olt.show_olt_orNot = true;//显示olt区域
                         vm_olt.woyunwei = true;
-                    }else if(result.toString().indexOf('只支持FTTH区域') !== -1){//wo运维中判断是不是FTTH区域
+                    } else if (result.toString().indexOf('只支持FTTH区域') !== -1) {//wo运维中判断是不是FTTH区域
+                        vm_olt.show_olt_orNot = true;//显示olt区域
                         vm_olt.zteOrHwOlt = true;
-                    }else if(result.toString() === 'sysBusy') {//判断OLT后台是否忙
+                    } else if (result.toString() === 'sysBusy') {//判断OLT后台是否忙
+                        vm_olt.show_olt_orNot = true;//显示olt区域
                         vm_olt.sysBusy = true;
-                    }else {//以上都未发生则正常把结果赋值给 vm模型
+                    } else if (result.toString().indexOf('no num') !== -1) {
+                        vm_olt.show_auth_orNot = false;//不显示olt区域
+                        $show_area_tip.text('此手机号无对应的宽带账号信息，请输入用户入网时正确的联系号码.或者直接输入宽带号码查询.')
+                    } else {//以上都未发生则正常把结果赋值给 vm模型
+                        vm_olt.show_olt_orNot = true;//显示olt区域
                         vm_olt.results = result;
                     }
-
-
                 })
             }else {
-                $show_area_tip.text('请输入正确的宽带帐号！')
+                $show_area_tip.text('请输入正确的宽带帐号或者手机号码！')
             }
         }
     });
@@ -473,28 +485,35 @@ $(function () {
         let $qunzhangArea = $('#qunzhangArea');
         e.preventDefault();
         let userNum = $('#input_usernum').val();
-        if(userNum.match(/05570\d{7}/)&&userNum.toString().length === 12){
+        let cellNum = $('#input_cellnum').val();
+        if(userNum.match(/05570\d{7}/)&&userNum.toString().length === 12 || cellNum.match(/1\d{10}/)&&cellNum.toString().length===11){
             $qunzhangArea.html("<p class='tips' style='font-size: 2em;'>正在查询群障信息<img src='static/images/wait.gif'/></p>");
             //华为或中兴olt post数据模块，判断沃运维app数据，olt爬取数据
             $.post('/oltAdmin',{
-                userNum:userNum
+                userNum:userNum ? userNum : cellNum
             }, function (result) {
                 console.log(result.manufacturer);
-                if(result.qz_state.indexOf('无群障') !== -1){
-                    $qunzhangArea.html(`<span class="label label-success">${result.qz_state}</span>`)
-                }else{
-                    if(result.qz_state.indexOf('上行链路') !== -1 && result.manufacturer === 'zte'){
-                        $qunzhangArea.html(`<span class="label label-danger">${result.qz_state}</span>
-                        <br>
-                        <a class = 'btn btn-small btn-warning' id = 'errHandOverBtn'>一键倒换(目前支持中兴OLT，华为OLT请勿点击)</a>
-                        `)
-                    }else{
-                        $qunzhangArea.html(`<span class="label label-danger">${result.qz_state}</span>`)
+                    if (result.toString() === 'no num') {
+                        $qunzhangArea.html(`<span class="label label-warning">该手机号码没有对应的宽带信息</span>`)
+                    } else {
+                        if (result.qz_state.indexOf('无群障') !== -1) {
+                            $qunzhangArea.html(`<span class="label label-success">${result.qz_state}(${result.manufacturer}OLT IP:${result.olt_ip})</span>`)
+                        } else {
+                            // alert(result.qz_state.indexOf('上行链路') !==-1 && result.manufacturer === 'zte')
+                            if (result.qz_state.indexOf('上行链路') !==-1&& result.manufacturer === 'zte') {
+                                $qunzhangArea.html(`<span class="label label-danger">${result.qz_state}(${result.manufacturer}OLT IP:${result.olt_ip})</span>
+                                <br>
+                                <a class = 'btn btn-small btn-warning' id = 'errHandOverBtn'>一键倒换(目前支持中兴OLT，华为OLT请勿点击)</a>
+                                `)
+                            } else {
+                                $qunzhangArea.html(`<span class="label label-danger">${result.qz_state}(${result.manufacturer}OLT IP:${result.olt_ip})</span>`)
+                            }
+                        }
                     }
-                }
-            })
-        }else {
-            $show_area_tip.text('请输入正确的宽带帐号！')
+
+                })
+        } else {
+            $show_area_tip.text('请输入正确的宽带帐号或者手机号码！')
         }
     });
 
@@ -526,10 +545,14 @@ $(function () {
               alert(res.result)
           }) 
         } else {
-            $show_area_tip.text('请输入正确的宽带帐号！')
+            $show_area_tip.text('请输入正确的宽带帐号或者手机号码！')
         }
-
-
+    })
+    $(document).on('focus','#input_usernum',function(e){
+        $('#input_cellnum').val('')
+    })
+    $(document).on('focus','#input_cellnum',function(e){
+        $('#input_usernum').val('')
     })
 
 });

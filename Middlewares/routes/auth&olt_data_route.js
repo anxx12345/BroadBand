@@ -7,6 +7,7 @@ const qunzhang = require('../../band_middlewares/olt/olt_qunzhang_main');
 const auto_complete =require('../../band_middlewares/autoComplete/auto_complete');
 const handOver = require('../../band_middlewares/olt/errHandOver');
 const keys = require('../../keys');
+const QueryBandNum = require('../../band_middlewares/numQuery/Query')
 //const iptv = require('../band_middlewares/iptv/iptv');
 Date.prototype.format = function(fmt){ //author: meizz
     let o = {
@@ -28,27 +29,38 @@ Date.prototype.format = function(fmt){ //author: meizz
 
 module.exports = (router)=>{
 
-    router.post('/auth',async function (ctx,next) {
-        if(!ctx.session.user){
+    router.post('/auth', async function (ctx, next) {
+        if (!ctx.session.user) {
             await ctx.redirect('/')
         }
         let options = {
             //userNum: '055709113813',
-            userNum:ctx.request.body.userNum,
+            userNum: ctx.request.body.userNum,
             //startTime: '2018-02-22 00:00:00',
             startTime: ctx.request.body.startTime,
             //endTime: '2018-02-23 23:59:59'
             endTime: ctx.request.body.endTime
         };
-        logIt(__dirname+'/auth','user: '+ctx.session.user+' visit_time '+new Date().format("yyyy-MM-dd hh:mm:ss")+ ' ' +options.userNum + ' '+options.startTime +' '+options.endTime+ ' 远程IP地址:'+ ctx.request.ip);
+        logIt(__dirname + '/auth', 'user: ' + ctx.session.user + ' visit_time ' + new Date().format("yyyy-MM-dd hh:mm:ss") + ' ' + options.userNum + ' ' + options.startTime + ' ' + options.endTime + ' 远程IP地址:' + ctx.request.ip);
         //ctx.response.body(ctx.request.body);
-        if(options.userNum.match(/05570\d{7}/)&&options.userNum.toString().length === 12){
+        if (options.userNum.match(/05570\d{7}/) && options.userNum.toString().length === 12) {
             await band_auth_IO(options).then(result => {
                 options = {};
                 ctx.body = result;
             });
-        }else {
-            ctx.body = {}
+        } else if (options.userNum.match(/1\d{10}/) && options.userNum.length === 11) {
+            let bandNum = await QueryBandNum(options.userNum)
+            console.log(bandNum)
+            if (bandNum) {
+                options.userNum = bandNum;
+                await band_auth_IO(options).then(result => {
+                    options = {};
+                    result.bandNum = bandNum
+                    ctx.body = result;
+                });
+            } else {
+                ctx.body = 'no num'
+            }
         }
     });
 
@@ -60,83 +72,92 @@ module.exports = (router)=>{
             //userNum: '055709113813',
             userNum:ctx.request.body.userNum
         };
-        logIt(__dirname+'/olt','user: '+ctx.session.user+' visit_time '+new Date().format("yyyy-MM-dd hh:mm:ss")+ ' ' +options.userNum + ' 远程IP地址:'+ ctx.request.ip);
+        console.log(options.userNum)
+        logIt(__dirname + '/olt', 'user: ' + ctx.session.user + ' visit_time ' + new Date().format("yyyy-MM-dd hh:mm:ss") + ' ' + options.userNum + ' 远程IP地址:' + ctx.request.ip);
+        
         //ctx.response.body(ctx.request.body);
-        if(options.userNum.match(/05570\d{7}/)&&options.userNum.toString().length === 12){//判断号码是否符合规范，符0557开头则进行下一步
-            await woyunwei(options.userNum).then(async result=> {
+        if (options.userNum.match(/05570\d{7}/) && options.userNum.toString().length === 12 || options.userNum.match(/1\d{10}/) && options.userNum.length === 11) {//判断号码是否符合规范，符0557开头则进行下一步
+            if (options.userNum.match(/1\d{10}/) && options.userNum.length === 11) {
+                options.userNum = await QueryBandNum(options.userNum)
+            }
+            console.log(options.userNum)
+            if (options.userNum) {
+                await woyunwei(options.userNum).then(async result => {
                     let json = JSON.parse(result);
                     //console.log(result)
-                    if(result.indexOf('找不到对应的产品实例') === -1 && result.indexOf('woyunwei response null') ===-1){//判断集团沃运维app中有没有相应 记录
+                    if (result.indexOf('找不到对应的产品实例') === -1 && result.indexOf('woyunwei response null') === -1) {//判断集团沃运维app中有没有相应 记录
                         console.log('woyunwei info success.');//woyunwei app有记录则输出提示
                         json = json.body.data.resInfo.res;
 
                         let olt_manufacturer = json[5].resValue;
 
-                        if(olt_manufacturer === '中兴'){//判断是不是中兴olt
+                        if (olt_manufacturer === '中兴') {//判断是不是中兴olt
                             console.log('goto zte');
                             let options = {
                                 host: json[9].resValue,
-                                loid:json[6].resValue
+                                loid: json[6].resValue
                             };
-                            console.log(options.host+' '+options.loid+' '+olt_manufacturer +' '+ ctx.request.body.userNum);
+                            console.log(options.host + ' ' + options.loid + ' ' + olt_manufacturer + ' ' + ctx.request.body.userNum);
 
                             try {
                                 options.manufacturer = 'zte';
-                                let result= await zte_hw_olt(options);
-                                if(result.state){
+                                let result = await zte_hw_olt(options);
+                                if (result.state) {
                                     result.loid = options.loid;
                                     options = {};
                                     result.manufacturer = 'zte';
                                     ctx.body = result;
-                                }else {
+                                } else {
                                     result.manufacturer = 'zte';
                                     result.data = 'OLT无该用户数据';
                                     ctx.body = result;
                                 }
-                            }catch (e) {
-                                console.log('error end:'+e);
-                                ctx.body  = 'zte olt query error.'
+                            } catch (e) {
+                                console.log('error end:' + e);
+                                ctx.body = 'zte olt query error.'
                             }
 
 
-                        }else if(olt_manufacturer === '华为'){//判断是不是华为olt
+                        } else if (olt_manufacturer === '华为') {//判断是不是华为olt
                             console.log('goto huawei');
                             let options = {
                                 host: json[9].resValue,
-                                loid:json[6].resValue
+                                loid: json[6].resValue
                             };
-                            console.log(options.host+' '+options.loid+' '+olt_manufacturer+' '+ ctx.request.body.userNum);
+                            console.log(options.host + ' ' + options.loid + ' ' + olt_manufacturer + ' ' + ctx.request.body.userNum);
 
                             try {
                                 options.manufacturer = 'hw';
-                                let result= await zte_hw_olt(options);
-                                if(result.state){
+                                let result = await zte_hw_olt(options);
+                                if (result.state) {
                                     result.loid = options.loid;
                                     options = {};
                                     result.manufacturer = 'hw';
-                                    ctx.response.body =result;
-                                }else {
+                                    ctx.response.body = result;
+                                } else {
                                     result.manufacturer = 'hw';
                                     result.data = 'OLT无该用户数据';
-                                    ctx.response.body =result
+                                    ctx.response.body = result
                                 }
-                            }catch (e) {
-                                console.log('error end:'+e);
+                            } catch (e) {
+                                console.log('error end:' + e);
                                 ctx.response.body = 'hw olt query error.'
                             }
-                        }else{
+                        } else {
                             ctx.response.body = '目前只支持FTTH区域.';//其他非FTTH区域不支持
                             //console.log('目前只支持FTTH区域。');
                         }
-                    }else {//集团沃运维app无记录。
+                    } else {//集团沃运维app无记录。
                         ctx.response.body = 'no user info in woyunwei app.';
                         //console.log('no user info in woyunwei app.');
                     }
                 }
-            );
+                );
+            } else {
+                ctx.body = 'no num'
+            }
 
-
-        }else {//不符合0557开头则返回空，一般用不到，除非客户端通过软件绕过页面js认证。
+        } else {//不符合0557开头则返回空，一般用不到，除非客户端通过软件绕过页面js认证。
             ctx.response.body = {}
         }
     });
@@ -145,16 +166,19 @@ module.exports = (router)=>{
         if(!ctx.session.user === keys.auth.admin.username){
             await ctx.redirect('/')
         }
-
+       
         let options = {
             //userNum: '055709113813',
             userNum:ctx.request.body.userNum
         };
         logIt(__dirname+'/olt','user: '+ctx.session.user+' visit_time '+new Date().format("yyyy-MM-dd hh:mm:ss")+ ' ' +options.userNum + ' 远程IP地址:'+ ctx.request.ip);
         //ctx.response.body(ctx.request.body);
-        if(options.userNum.match(/05570\d{7}/)&&options.userNum.toString().length === 12){//判断号码是否符合规范，符0557开头则进行下一步
-
-           await woyunwei(options.userNum).then(async result=> {
+        if(options.userNum.match(/05570\d{7}/)&&options.userNum.toString().length === 12 || options.userNum.match(/1\d{10}/) && options.userNum.length === 11){//判断号码是否符合规范，符0557开头则进行下一步
+            if (options.userNum.match(/1\d{10}/) && options.userNum.length === 11) {
+                options.userNum = await QueryBandNum(options.userNum)
+            }
+           if(options.userNum){
+                await woyunwei(options.userNum).then(async result=> {
                     let json = JSON.parse(result);
                     //console.log(result)
                     if(result.indexOf('找不到对应的产品实例') === -1 && result.indexOf('woyunwei response null') ===-1){//判断集团沃运维app中有没有相应 记录
@@ -162,6 +186,7 @@ module.exports = (router)=>{
                         json = json.body.data.resInfo.res;
 
                         let olt_manufacturer = json[5].resValue;
+                        let olt_ip = json[9].resValue;
                         let vlan_id = json[11].resValue; //获取外层vlan
                         let host = json[9].resValue;
                         if(olt_manufacturer === '中兴'){//判断是不是中兴olt
@@ -171,6 +196,7 @@ module.exports = (router)=>{
                             try {
                                 qunzhangRes.qz_state = await qunzhang({host:host,vlan:vlan_id,manufacturer:'zte'});
                                 qunzhangRes.manufacturer = 'zte'
+                                qunzhangRes.olt_ip = olt_ip
                                 ctx.response.body = qunzhangRes;
                             }catch (e) {
                                 console.log('error end:'+e);
@@ -183,6 +209,7 @@ module.exports = (router)=>{
                             try {
                                 qunzhangRes.qz_state = await qunzhang({host:host,vlan:vlan_id,manufacturer:'hw'});
                                 qunzhangRes.manufacturer = 'hw'
+                                qunzhangRes.olt_ip = olt_ip
                                 ctx.response.body = qunzhangRes;
                             }catch (e) {
                                 console.log('error end:'+e);
@@ -198,11 +225,14 @@ module.exports = (router)=>{
                     }
                 }
             );
-
-
+           }else{
+               ctx.body = 'no num'//can't get band num from cell num
+           }
+          
         }else {//不符合0557开头则返回空，一般用不到，除非客户端通过软件绕过页面js认证。
             ctx.response.body = {}
         }
+
     });
 
     router.post('/olt_autoCom',async function (ctx,next) {
