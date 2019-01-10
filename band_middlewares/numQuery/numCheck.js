@@ -24,9 +24,9 @@ let app = async function () {
     const BUTTON_SELECTOR = '#loginBtn';
 
     await page.click(USERNAME_SELECTOR);
-    await page.type(USERNAME_SELECTOR, 'szzt');
+    await page.type(USERNAME_SELECTOR, '');
     await page.click(PASSWORD_SELECTOR);
-    await page.type(PASSWORD_SELECTOR, 'szzt@001');
+    await page.type(PASSWORD_SELECTOR, '');
     await page.click(BUTTON_SELECTOR);
     console.log("登录完成，跳转查询页面");
 
