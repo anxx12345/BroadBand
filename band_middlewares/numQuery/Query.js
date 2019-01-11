@@ -84,11 +84,11 @@ async function app(num) {
             let result = userInfo_raw.body.indexOf('05570') !==-1 ? /05570\d{7}/g.exec(userInfo_raw.body)[0] : false 
             console.log(result)
             resovle(result)
-
+            
       })
 };
 
-// let num = 18605579128
+// let num = 18605579676
 // app(num)
 module.exports = app;
 // app({userNum:'055709956057'}).then(result=>console.log(result));

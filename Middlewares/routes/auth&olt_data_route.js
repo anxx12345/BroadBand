@@ -59,6 +59,7 @@ module.exports = (router)=>{
                     ctx.body = result;
                 });
             } else {
+                options = {};
                 ctx.body = 'no num'
             }
         }
@@ -93,22 +94,25 @@ module.exports = (router)=>{
 
                         if (olt_manufacturer === '中兴') {//判断是不是中兴olt
                             console.log('goto zte');
-                            let options = {
+                            let woptions = {
                                 host: json[9].resValue,
                                 loid: json[6].resValue
                             };
-                            console.log(options.host + ' ' + options.loid + ' ' + olt_manufacturer + ' ' + ctx.request.body.userNum);
+                            console.log(woptions.host + ' ' + woptions.loid + ' ' + olt_manufacturer + ' ' + ctx.request.body.userNum);
 
                             try {
-                                options.manufacturer = 'zte';
-                                let result = await zte_hw_olt(options);
+                                woptions.manufacturer = 'zte';
+                                let result = await zte_hw_olt(woptions);
                                 if (result.state) {
-                                    result.loid = options.loid;
+                                    result.loid = woptions.loid;
+                                    woptions = {};
                                     options = {};
                                     result.manufacturer = 'zte';
                                     ctx.body = result;
                                 } else {
                                     result.manufacturer = 'zte';
+                                    woptions = {};
+                                    options = {};
                                     result.data = 'OLT无该用户数据';
                                     ctx.body = result;
                                 }
@@ -120,21 +124,24 @@ module.exports = (router)=>{
 
                         } else if (olt_manufacturer === '华为') {//判断是不是华为olt
                             console.log('goto huawei');
-                            let options = {
+                            let woptions = {
                                 host: json[9].resValue,
                                 loid: json[6].resValue
                             };
-                            console.log(options.host + ' ' + options.loid + ' ' + olt_manufacturer + ' ' + ctx.request.body.userNum);
+                            console.log(woptions.host + ' ' + woptions.loid + ' ' + olt_manufacturer + ' ' + ctx.request.body.userNum);
 
                             try {
-                                options.manufacturer = 'hw';
-                                let result = await zte_hw_olt(options);
+                                woptions.manufacturer = 'hw';
+                                let result = await zte_hw_olt(woptions);
                                 if (result.state) {
-                                    result.loid = options.loid;
+                                    result.loid = woptions.loid;
+                                    woptions = {}
                                     options = {};
                                     result.manufacturer = 'hw';
                                     ctx.response.body = result;
                                 } else {
+                                    woptions = {};
+                                    options = {};
                                     result.manufacturer = 'hw';
                                     result.data = 'OLT无该用户数据';
                                     ctx.response.body = result
@@ -144,16 +151,20 @@ module.exports = (router)=>{
                                 ctx.response.body = 'hw olt query error.'
                             }
                         } else {
+                            options = {};
+                            woptions = {};
                             ctx.response.body = '目前只支持FTTH区域.';//其他非FTTH区域不支持
                             //console.log('目前只支持FTTH区域。');
                         }
                     } else {//集团沃运维app无记录。
+                        options = {};
                         ctx.response.body = 'no user info in woyunwei app.';
                         //console.log('no user info in woyunwei app.');
                     }
                 }
                 );
             } else {
+                options = {};
                 ctx.body = 'no num'
             }
 
@@ -197,6 +208,7 @@ module.exports = (router)=>{
                                 qunzhangRes.qz_state = await qunzhang({host:host,vlan:vlan_id,manufacturer:'zte'});
                                 qunzhangRes.manufacturer = 'zte'
                                 qunzhangRes.olt_ip = olt_ip
+                                options = {};
                                 ctx.response.body = qunzhangRes;
                             }catch (e) {
                                 console.log('error end:'+e);
@@ -210,26 +222,31 @@ module.exports = (router)=>{
                                 qunzhangRes.qz_state = await qunzhang({host:host,vlan:vlan_id,manufacturer:'hw'});
                                 qunzhangRes.manufacturer = 'hw'
                                 qunzhangRes.olt_ip = olt_ip
+                                options = {};
                                 ctx.response.body = qunzhangRes;
                             }catch (e) {
                                 console.log('error end:'+e);
                                 ctx.response.body = 'hw olt query error.'
                             }
                         }else{
+                            options = {};
                             ctx.response.body = '目前只支持FTTH区域.';//其他非FTTH区域不支持
                             //console.log('目前只支持FTTH区域。');
                         }
                     }else {//集团沃运维app无记录。
+                        options = {};
                         ctx.response.body = 'no user info in woyunwei app.';
                         //console.log('no user info in woyunwei app.');
                     }
                 }
             );
            }else{
+               options = {};
                ctx.body = 'no num'//can't get band num from cell num
            }
           
         }else {//不符合0557开头则返回空，一般用不到，除非客户端通过软件绕过页面js认证。
+            options = {};
             ctx.response.body = {}
         }
 
