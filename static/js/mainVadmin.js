@@ -232,6 +232,11 @@ $(function () {
     $end_time.val(today);
     //用户认证模块
     $(document).on('click','#queryAuthBtn', function (e) {
+        $queryAuthBtn = $('#queryAuthBtn');
+        $queryAuthBtn.attr('disabled',true).html('<b style="color: #ff0000">认证信息查询十秒锁定</b>');
+        setTimeout(function () {
+            $queryAuthBtn.attr('disabled',false).html('<b>查询用户认证信息</b>')
+        },10000);
         vm_auth.show_auth_orNot = false;//是否显示认证结果区域vue if模块判断参数
         vm_auth.results = {userInfo:[],userAuthHis:[]};
         e.preventDefault();
@@ -277,9 +282,9 @@ $(function () {
     $(document).on('click','#queryOltBtn', function (e) {
         $show_area_tip.html("<p class='tips'>正在计算<img src='static/images/wait.gif' /></p>");
         $queryOltBtn = $('#queryOltBtn');
-        $queryOltBtn.attr('abled',true).html('<b style="color: #ff0000">OLT查询十秒锁定</b>');
+        $queryOltBtn.attr('disabled',true).html('<b style="color: #ff0000">OLT查询十秒锁定</b>');
         setTimeout(function () {
-            $queryOltBtn.attr('abled',false).html('<b>查询用户OLT信息</b>')
+            $queryOltBtn.attr('disabled',false).html('<b>查询用户OLT信息</b>')
         },10000);
         vm_olt.show_olt_orNot = false;//是否显示olt区域vue if模块判断参数
         vm_olt.sysBusy = false;//是否显示olt后台忙vue if模块判断参数
